@@ -8,10 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.reflections.Reflections;
 
-/**
- * Hello world!
- *
- */
 public class CodeRunnerRootServlet extends HttpServlet
 {
 	private static final long serialVersionUID = 771578936675722864L;
