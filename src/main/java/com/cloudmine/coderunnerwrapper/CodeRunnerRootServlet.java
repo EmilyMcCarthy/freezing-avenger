@@ -1,5 +1,6 @@
-package example;
+package com.cloudmine.coderunnerwrapper;
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -11,7 +12,7 @@ import org.reflections.Reflections;
  * Hello world!
  *
  */
-public class HelloServlet extends HttpServlet
+public class CodeRunnerRootServlet extends HttpServlet
 {
 	private static final long serialVersionUID = 771578936675722864L;
 
