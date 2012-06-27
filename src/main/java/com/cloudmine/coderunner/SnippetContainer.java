@@ -5,5 +5,5 @@ import java.util.Map;
 
 public interface SnippetContainer {
 	public String getSnippetName();
-	public String runSnippet(Map<String, String> params) throws IOException;
+	public String runSnippet(Map<String, String[]> params) throws IOException;
 }
