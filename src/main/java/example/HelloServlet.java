@@ -5,6 +5,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.reflections.Reflections;
+
 /**
  * Hello world!
  *
@@ -16,6 +18,7 @@ public class HelloServlet extends HttpServlet
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
     throws ServletException, IOException
     {
+		Reflections ref = null;
         resp.getWriter().println("Hello Servlet World!");
     }
 }
