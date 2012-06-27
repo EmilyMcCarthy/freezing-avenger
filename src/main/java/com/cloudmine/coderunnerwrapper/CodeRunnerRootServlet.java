@@ -18,17 +18,17 @@ import com.cloudmine.coderunner.SnippetResponseConfiguration;
 
 public class CodeRunnerRootServlet extends HttpServlet {
 	private static final long serialVersionUID = 771578936675722864L;
-	
+
 	private Map<String, SnippetContainer> snippetContainers;
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-		
+
 		if (snippetContainers == null) {
 			snippetContainers = new HashMap<String, SnippetContainer>();
 		}
-		
+
 		// TODO: make this configurable
 		Reflections reflections = new Reflections("com.cloudmine.coderunner.examples");
 		for (Class<? extends SnippetContainer> containerClass : reflections.getSubTypesOf(SnippetContainer.class)) {
@@ -46,15 +46,15 @@ public class CodeRunnerRootServlet extends HttpServlet {
 		String snippetName = req.getRequestURI().substring(1); // remove the first slash
 		@SuppressWarnings("unchecked") Map<String, String[]> parameterMap = req.getParameterMap(); // pass the parameter map along to the snippet
 		SnippetResponseConfiguration responseConfig = new SnippetResponseConfiguration();
-		
+
 		// Check if the snippet container is available based on the path, and activate it if so.
 		// Otherwise render a 404 and stop.
 		if (snippetContainers.containsKey(snippetName)) {
 			SnippetContainer container = snippetContainers.get(snippetName);
 			Object snippetResponse = container.runSnippet(responseConfig, parameterMap);
-			
+
 			resp.setContentType(responseConfig.getMimeType());
-			
+
 			ObjectMapper mapper = new ObjectMapper();
 			mapper.writeValue(resp.getOutputStream(), snippetResponse);
 		} else {
