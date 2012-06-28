@@ -29,8 +29,7 @@ public class CodeRunnerRootServlet extends HttpServlet {
 			snippetContainers = new HashMap<String, SnippetContainer>();
 		}
 
-		// TODO: make this configurable
-		Reflections reflections = new Reflections("com.cloudmine.coderunner.examples");
+		Reflections reflections = new Reflections("com", "net", "org", "me", "io", "edu", "gov", "mil");
 		for (Class<? extends SnippetContainer> containerClass : reflections.getSubTypesOf(SnippetContainer.class)) {
 			try {
 				SnippetContainer container = containerClass.newInstance();
