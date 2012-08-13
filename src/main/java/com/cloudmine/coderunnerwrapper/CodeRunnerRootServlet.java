@@ -3,7 +3,6 @@ package com.cloudmine.coderunnerwrapper;
 import com.cloudmine.coderunner.SnippetArguments;
 import com.cloudmine.coderunner.SnippetContainer;
 import com.cloudmine.coderunner.SnippetResponseConfiguration;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,35 +14,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class CodeRunnerRootServlet extends HttpServlet {
 	private static final long serialVersionUID = 771578936675722864L;
     private static final Logger LOG = LoggerFactory.getLogger(CodeRunnerRootServlet.class);
-	private Map<String, SnippetContainer> snippetContainers;
+
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
-
-		if (snippetContainers == null) {
-			snippetContainers = new HashMap<String, SnippetContainer>();
-		}
-
-		Reflections reflections = new Reflections("com", "net", "org", "me", "io", "edu", "gov", "mil");
-        Set<Class<? extends SnippetContainer>> subTypesOf = reflections.getSubTypesOf(SnippetContainer.class);
-        LOG.info("Found " + subTypesOf.size() + " subtypes");
-
-        for (Class<? extends SnippetContainer> containerClass : subTypesOf) {
-			try {
-				SnippetContainer container = containerClass.newInstance();
-                String snippetName = container.getSnippetName();
-                LOG.info("Storing snippetName: " + snippetName + " to: " + container);
-                snippetContainers.put(snippetName, container);
-			} catch (Exception e) {
-				LOG.error("Trouble putting in container", e);
-			}
-		}
 	}
 
     @Override
@@ -53,7 +32,7 @@ public class CodeRunnerRootServlet extends HttpServlet {
 
         @SuppressWarnings("unchecked") Map<String, String[]> parameterMap = req.getParameterMap(); // pass the parameter map along to the snippet
 
-
+        Map<String, SnippetContainer> snippetContainers = CodeSnippetNameServlet.getSnippetNamesToContainers();
 
         // Check if the snippet container is available based on the path, and activate it if so.
         // Otherwise render a 404 and stop.
