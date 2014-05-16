@@ -51,6 +51,11 @@
 		</plugins>
 	</build>
 	<dependencies>
+        <dependency>
+            <groupId>com.cloudmine.api</groupId>
+            <artifactId>cloudmine-javasdk</artifactId>
+            <version>0.3-SNAPSHOT</version>
+        </dependency>
 		<dependency>
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
@@ -76,7 +81,22 @@
 			<artifactId>coderunner</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.6.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.6.4</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.9</version>
+        </dependency>
+    </dependencies>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
