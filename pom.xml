@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.cloudmine.coderunnerwrapper</groupId>
 	<artifactId>coderunnerwrapper</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<pluginRepositories>
 		<pluginRepository>
 			<id>cloudbees-public-release</id>
@@ -50,6 +50,17 @@
 			</plugin>
 		</plugins>
 	</build>
+  <distributionManagement>
+      <repository>
+          <id>repo</id>
+          <url>https://github.com/cloudmine/maven/raw/master/releases</url>
+      </repository>
+      <snapshotRepository>
+          <id>snapshot-repo</id>
+          <url>https://github.com/cloudmine/maven/raw/master/snapshots</url>
+      </snapshotRepository>
+  </distributionManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.reflections</groupId>
@@ -74,7 +85,7 @@
 		<dependency>
 			<groupId>com.cloudmine</groupId>
 			<artifactId>coderunner</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.1</version>
 		</dependency>
 	</dependencies>
 	<dependencyManagement>
