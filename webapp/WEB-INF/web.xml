@@ -9,8 +9,16 @@
     <servlet-name>CodeRunnerRootServlet</servlet-name>  
     <servlet-class>com.cloudmine.coderunnerwrapper.CodeRunnerRootServlet</servlet-class>  
   </servlet>
+  <servlet>
+    <servlet-name>CodeSnippetNameServlet</servlet-name>
+    <servlet-class>com.cloudmine.coderunnerwrapper.CodeSnippetNameServlet</servlet-class>
+  </servlet>
   <servlet-mapping>
     <servlet-name>CodeRunnerRootServlet</servlet-name>
     <url-pattern>/</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>CodeSnippetNameServlet</servlet-name>
+    <url-pattern>/names</url-pattern>
   </servlet-mapping>
 </web-app>
