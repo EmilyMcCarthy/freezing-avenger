@@ -1,5 +1,7 @@
 package com.cloudmine.coderunnerwrapper;
 
+import com.cloudmine.api.SimpleCMObject;
+import com.cloudmine.api.rest.JsonUtilities;
 import com.cloudmine.coderunner.SnippetArguments;
 import com.cloudmine.coderunner.SnippetContainer;
 import com.cloudmine.coderunner.SnippetResponseConfiguration;
@@ -27,36 +29,44 @@ public class CodeRunnerRootServlet extends HttpServlet {
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String snippetName = req.getRequestURI().substring(1); // remove the first slash
-        LOG.info("doPost called for snippetName: " + snippetName);
+        try {
+            String snippetName = req.getRequestURI().substring(1); // remove the first slash
+            LOG.info("doPost called for snippetName: " + snippetName);
 
-        @SuppressWarnings("unchecked") Map<String, String[]> parameterMap = req.getParameterMap(); // pass the parameter map along to the snippet
+            @SuppressWarnings("unchecked") Map<String, String[]> parameterMap = req.getParameterMap(); // pass the parameter map along to the snippet
 
-        Map<String, SnippetContainer> snippetContainers = CodeSnippetNameServlet.getSnippetNamesToContainers();
+            Map<String, SnippetContainer> snippetContainers = CodeSnippetNameServlet.getSnippetNamesToContainers();
 
-        // Check if the snippet container is available based on the path, and activate it if so.
-        // Otherwise render a 404 and stop.
-        if (snippetContainers.containsKey(snippetName)) {
-            LOG.info("Has key, calling snippet");
-            Map<String, String> convertedParamMap = convertParameterMap(parameterMap);
-            SnippetContainer container = snippetContainers.get(snippetName);
+            // Check if the snippet container is available based on the path, and activate it if so.
+            // Otherwise render a 404 and stop.
+            if (snippetContainers.containsKey(snippetName)) {
+                LOG.info("Has key, calling snippet");
+                Map<String, String> convertedParamMap = convertParameterMap(parameterMap);
+                SnippetContainer container = snippetContainers.get(snippetName);
 
-            String asyncString = convertedParamMap.get("async");
-            boolean isAsync = asyncString != null && Boolean.parseBoolean(asyncString);
-            long startTime = System.currentTimeMillis();
-            if(isAsync) {
-                LOG.info("Running asynchronously");
-                RunnableSnippet snippet = new RunnableSnippet(container, new SnippetArguments(new SnippetResponseConfiguration(), convertedParamMap));
-                new Thread(snippet).start();
+                String asyncString = convertedParamMap.get("async");
+                boolean isAsync = asyncString != null && Boolean.parseBoolean(asyncString);
+                long startTime = System.currentTimeMillis();
+                if(isAsync) {
+                    LOG.info("Running asynchronously");
+                    RunnableSnippet snippet = new RunnableSnippet(container, new SnippetArguments(new SnippetResponseConfiguration(), convertedParamMap));
+                    new Thread(snippet).start();
+                } else {
+                    LOG.info("Running synchronously, a response will be returned");
+                    RunnableSnippet snippet = new RunnableSnippet(container, new SnippetArguments(new SnippetResponseConfiguration(), convertedParamMap), resp);
+                    snippet.run();
+                }
+                long totalTime = System.currentTimeMillis() - startTime;
+                LOG.info("Ran for: " + totalTime + "ms");
             } else {
-                LOG.info("Running synchronously, a response will be returned");
-                RunnableSnippet snippet = new RunnableSnippet(container, new SnippetArguments(new SnippetResponseConfiguration(), convertedParamMap), resp);
-                snippet.run();
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                resp.flushBuffer();
             }
-            long totalTime = System.currentTimeMillis() - startTime;
-            LOG.info("Ran for: " + totalTime + "ms");
-        } else {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }catch(Throwable throwable) {
+            LOG.error("Snippet crashed while running", throwable);
+            SimpleCMObject errorObject = new SimpleCMObject(false);
+            errorObject.add("error", throwable.getLocalizedMessage());
+            JsonUtilities.writeObjectToJson(errorObject, resp.getOutputStream());
             resp.flushBuffer();
         }
 

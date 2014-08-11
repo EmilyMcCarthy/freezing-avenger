@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.cloudmine.coderunnerwrapper</groupId>
 	<artifactId>coderunnerwrapper</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.3</version>
 	<pluginRepositories>
 		<pluginRepository>
 			<id>cloudbees-public-release</id>
@@ -65,7 +65,7 @@
         <dependency>
             <groupId>com.cloudmine.api</groupId>
             <artifactId>cloudmine-javasdk</artifactId>
-            <version>0.3-SNAPSHOT</version>
+            <version>0.6.3</version>
         </dependency>
 		<dependency>
 			<groupId>org.reflections</groupId>
@@ -90,7 +90,7 @@
 		<dependency>
 			<groupId>com.cloudmine</groupId>
 			<artifactId>coderunner</artifactId>
-			<version>1.0.1</version>
+			<version>0.0.3</version>
 		</dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
