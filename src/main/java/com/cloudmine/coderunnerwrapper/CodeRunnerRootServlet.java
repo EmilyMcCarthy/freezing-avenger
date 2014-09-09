@@ -1,10 +1,12 @@
 package com.cloudmine.coderunnerwrapper;
 
+import com.cloudmine.api.SimpleCMObject;
+import com.cloudmine.api.Strings;
+import com.cloudmine.api.rest.JsonUtilities;
+import com.cloudmine.api.rest.response.CMObjectResponse;
 import com.cloudmine.coderunner.SnippetArguments;
 import com.cloudmine.coderunner.SnippetContainer;
 import com.cloudmine.coderunner.SnippetResponseConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -12,13 +14,31 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CodeRunnerRootServlet extends HttpServlet {
 	private static final long serialVersionUID = 771578936675722864L;
-    private static final Logger LOG = LoggerFactory.getLogger(CodeRunnerRootServlet.class);
+    public static final String VERSION_HEADER_KEY = "X-CloudMine-CodeRunner-Version";
+    public static final String DEFAULT_VERSION = "1";
+    private static final int BUFFER_SIZE = 4 * 1024;
 
+    public static String inputStreamToString(InputStream inputStream)
+            throws IOException {
+        StringBuilder builder = new StringBuilder();
+        InputStreamReader reader = new InputStreamReader(inputStream);
+        char[] buffer = new char[BUFFER_SIZE];
+        int length;
+        while ((length = reader.read(buffer)) != -1) {
+            builder.append(buffer, 0, length);
+        }
+        return builder.toString();
+    }
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
@@ -27,60 +47,93 @@ public class CodeRunnerRootServlet extends HttpServlet {
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String snippetName = req.getRequestURI().substring(1); // remove the first slash
-        LOG.info("doPost called for snippetName: " + snippetName);
+        try {
+            String requestURI = req.getRequestURI();
+            int lastSlash = requestURI.lastIndexOf("/");
+            if(lastSlash < 0) lastSlash = 0;
+            else lastSlash++;
+            String snippetName = requestURI.substring(lastSlash); // remove the first slash
 
-        @SuppressWarnings("unchecked") Map<String, String[]> parameterMap = req.getParameterMap(); // pass the parameter map along to the snippet
+            @SuppressWarnings("unchecked") Map<String, String[]> parameterMap = req.getParameterMap(); // pass the parameter map along to the snippet
 
-        Map<String, SnippetContainer> snippetContainers = CodeSnippetNameServlet.getSnippetNamesToContainers();
+            Map<String, SnippetContainer> snippetContainers = CodeSnippetNameServlet.getSnippetNamesToContainers();
 
-        // Check if the snippet container is available based on the path, and activate it if so.
-        // Otherwise render a 404 and stop.
-        if (snippetContainers.containsKey(snippetName)) {
-            LOG.info("Has key, calling snippet");
-            Map<String, String> convertedParamMap = convertParameterMap(parameterMap);
-            SnippetContainer container = snippetContainers.get(snippetName);
+            // Check if the snippet container is available based on the path, and activate it if so.
+            // Otherwise render a 404 and stop.
+            if (snippetContainers.containsKey(snippetName)) {
 
-            String asyncString = convertedParamMap.get("async");
-            boolean isAsync = asyncString != null && Boolean.parseBoolean(asyncString);
-            long startTime = System.currentTimeMillis();
-            if(isAsync) {
-                LOG.info("Running asynchronously");
-                RunnableSnippet snippet = new RunnableSnippet(container, new SnippetArguments(new SnippetResponseConfiguration(), convertedParamMap));
-                new Thread(snippet).start();
+                String versionString = req.getHeader(VERSION_HEADER_KEY);
+                System.out.println("Version string: " + versionString);
+                versionString = Strings.isEmpty(versionString) ? DEFAULT_VERSION : versionString;
+                int version = 1;
+                try {
+                    version = Integer.valueOf(versionString);
+                }catch(NumberFormatException nfe) {
+                }
+                SnippetArguments arguments;
+                boolean isAsync = false;
+
+                System.out.println("Running version: " + version);
+
+                if(version <= 1) {
+                    Map<String, String> convertedParamMap = convertParameterMap(parameterMap);
+                    String asyncString = convertedParamMap.get("async");
+                    isAsync = asyncString != null && Boolean.parseBoolean(asyncString);
+                    arguments = new SnippetArguments(new SnippetResponseConfiguration(), convertedParamMap);
+                } else {
+                    String body = inputStreamToString(req.getInputStream());
+                    arguments = new SnippetArguments(body);
+                }
+                SnippetContainer container = snippetContainers.get(snippetName);
+                if(isAsync) {
+                    RunnableSnippet snippet = new RunnableSnippet(container, arguments);
+                    new Thread(snippet).start();
+                } else {
+                    RunnableSnippet snippet = new RunnableSnippet(container, arguments, resp);
+                    snippet.run();
+                }
+
             } else {
-                LOG.info("Running synchronously, a response will be returned");
-                RunnableSnippet snippet = new RunnableSnippet(container, new SnippetArguments(new SnippetResponseConfiguration(), convertedParamMap), resp);
-                snippet.run();
+                JsonUtilities.writeObjectToJson("got " + snippetName, resp.getOutputStream());
+                resp.flushBuffer();
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                resp.flushBuffer();
             }
-            long totalTime = System.currentTimeMillis() - startTime;
-            LOG.info("Ran for: " + totalTime + "ms");
-        } else {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }catch(Throwable throwable) {
+            SimpleCMObject errorObject = new SimpleCMObject(false);
+            errorObject.add("error", throwable.getLocalizedMessage());
+            JsonUtilities.writeObjectToJson(errorObject, resp.getOutputStream());
             resp.flushBuffer();
         }
-
     }
 
     private Map<String, String> convertParameterMap(Map<String, String[]> parameterMap) {
+        System.out.println("Converting parameter map");
         Map<String, String> convertedParamMap = new HashMap<String, String>();
         for(String key : parameterMap.keySet()) {
             String[] values = parameterMap.get(key);
             String valueAsString = getValueAsString(values);
-            LOG.info(key + ":" + valueAsString);
-            convertedParamMap.put(key, valueAsString);
+            String decoded;
+            try {
+                decoded = URLDecoder.decode(valueAsString, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                decoded = URLDecoder.decode(valueAsString);
+            }
+            System.out.println("Decoded to: " + decoded);
+            convertedParamMap.put(key, decoded);
         }
         return convertedParamMap;
     }
 
     private String getValueAsString(String[] values) {
+        if(values == null) return "";
         switch(values.length) {
             case 0:
                 return "";
             case 1:
                 return values[0];
             default:
-                LOG.error("String array received; should only receive one String per parameter. Concatenating");
                 StringBuilder builder = new StringBuilder();
                 for(int i = 0; i < values.length; i++) {
                     builder.append(values[i]);
