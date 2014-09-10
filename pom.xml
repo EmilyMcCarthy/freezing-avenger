@@ -3,8 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.cloudmine.coderunnerwrapper</groupId>
 	<artifactId>coderunnerwrapper</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.3</version>
 	<repositories>
+    <repository>
+        <id>cloudmine-releases</id>
+        <url>https://github.com/cloudmine/maven/raw/master/releases</url>
+    </repository>
 		<repository>
 			<id>codehaus</id>
 			<url>http://repository.codehaus.org/org/codehaus</url>
@@ -47,7 +51,7 @@
         <dependency>
             <groupId>com.cloudmine.api</groupId>
             <artifactId>cloudmine-javasdk</artifactId>
-            <version>0.6</version>
+            <version>0.6.3</version>
         </dependency>
 		<dependency>
 			<groupId>org.reflections</groupId>
@@ -72,7 +76,7 @@
 		<dependency>
 			<groupId>com.cloudmine</groupId>
 			<artifactId>coderunner</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.5</version>
 		</dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -99,5 +103,5 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	<packaging>jar</packaging>
+	<packaging>war</packaging>
 </project>

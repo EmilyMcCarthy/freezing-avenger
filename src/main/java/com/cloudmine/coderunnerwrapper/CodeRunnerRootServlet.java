@@ -3,7 +3,6 @@ package com.cloudmine.coderunnerwrapper;
 import com.cloudmine.api.SimpleCMObject;
 import com.cloudmine.api.Strings;
 import com.cloudmine.api.rest.JsonUtilities;
-import com.cloudmine.api.rest.response.CMObjectResponse;
 import com.cloudmine.coderunner.SnippetArguments;
 import com.cloudmine.coderunner.SnippetContainer;
 import com.cloudmine.coderunner.SnippetResponseConfiguration;
@@ -18,7 +17,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,7 +51,8 @@ public class CodeRunnerRootServlet extends HttpServlet {
             if(lastSlash < 0) lastSlash = 0;
             else lastSlash++;
             String snippetName = requestURI.substring(lastSlash); // remove the first slash
-
+            String body = inputStreamToString(req.getInputStream());
+            System.out.println("Body input: " + body);
             @SuppressWarnings("unchecked") Map<String, String[]> parameterMap = req.getParameterMap(); // pass the parameter map along to the snippet
 
             Map<String, SnippetContainer> snippetContainers = CodeSnippetNameServlet.getSnippetNamesToContainers();
@@ -81,8 +80,8 @@ public class CodeRunnerRootServlet extends HttpServlet {
                     isAsync = asyncString != null && Boolean.parseBoolean(asyncString);
                     arguments = new SnippetArguments(new SnippetResponseConfiguration(), convertedParamMap);
                 } else {
-                    String body = inputStreamToString(req.getInputStream());
-                    arguments = new SnippetArguments(body);
+
+                    arguments = new SnippetArguments(new SnippetResponseConfiguration(), body);
                 }
                 SnippetContainer container = snippetContainers.get(snippetName);
                 if(isAsync) {
@@ -100,8 +99,9 @@ public class CodeRunnerRootServlet extends HttpServlet {
                 resp.flushBuffer();
             }
         }catch(Throwable throwable) {
+            throwable.printStackTrace();
             SimpleCMObject errorObject = new SimpleCMObject(false);
-            errorObject.add("error", throwable.getLocalizedMessage());
+            errorObject.add("error", throwable.getMessage());
             JsonUtilities.writeObjectToJson(errorObject, resp.getOutputStream());
             resp.flushBuffer();
         }
