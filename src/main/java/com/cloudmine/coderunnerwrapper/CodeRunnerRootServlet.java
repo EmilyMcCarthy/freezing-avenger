@@ -95,6 +95,7 @@ public class CodeRunnerRootServlet extends HttpServlet {
             } else {
                 JsonUtilities.writeObjectToJson("got " + snippetName, resp.getOutputStream());
                 resp.flushBuffer();
+
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
                 resp.flushBuffer();
             }
