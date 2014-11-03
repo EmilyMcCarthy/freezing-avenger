@@ -42,10 +42,6 @@ public class CodeSnippetNameServlet extends HttpServlet{
         return snippetNamesToContainers;
     }
 
-    public static void main(String... args) {
-        System.out.println("Snippet names: " + snippetNamesToContainers.keySet().toArray());
-    }
-
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String[] snippetNames = snippetNamesToContainers.keySet().toArray(new String[snippetNamesToContainers.size()]);

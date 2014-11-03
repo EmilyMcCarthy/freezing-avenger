@@ -6,6 +6,9 @@ import com.cloudmine.api.rest.JsonUtilities;
 import com.cloudmine.coderunner.SnippetArguments;
 import com.cloudmine.coderunner.SnippetContainer;
 import com.cloudmine.coderunner.SnippetResponseConfiguration;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -141,5 +144,16 @@ public class CodeRunnerRootServlet extends HttpServlet {
                 }
                 return builder.toString();
         }
+    }
+
+    public static void main(String[] args) throws Exception{
+        Server server = new Server(Integer.valueOf(System.getenv("PORT")));
+        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        context.setContextPath("/");
+        server.setHandler(context);
+        context.addServlet(new ServletHolder(new CodeSnippetNameServlet()), "/names");
+        context.addServlet(new ServletHolder(new CodeRunnerRootServlet()),"/*");
+        server.start();
+        server.join();
     }
 }
