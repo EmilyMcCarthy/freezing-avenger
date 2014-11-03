@@ -64,6 +64,13 @@
             <artifactId>cloudmine-javasdk</artifactId>
             <version>0.6.3</version>
         </dependency>
+    <dependency>
+      <groupId>com.yourcompany.snippets</groupId>
+      <artifactId>snippets</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <scope>system</scope>
+      <systemPath>${basedir}/lib/snippets-0.0.1-SNAPSHOT.jar</systemPath>
+    </dependency>
 		<dependency>
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
