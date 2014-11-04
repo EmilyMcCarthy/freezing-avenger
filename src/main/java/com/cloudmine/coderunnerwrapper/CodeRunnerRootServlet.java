@@ -152,7 +152,8 @@ public class CodeRunnerRootServlet extends HttpServlet {
         context.setContextPath("/");
         server.setHandler(context);
         context.addServlet(new ServletHolder(new CodeSnippetNameServlet()), "/names");
-        context.addServlet(new ServletHolder(new CodeRunnerRootServlet()),"/*");
+        context.addServlet(new ServletHolder(new CodeRunnerRootServlet()),"/code/*");
+        context.addServlet(new ServletHolder(new HelloWorld()), "/hello");
         server.start();
         server.join();
     }
